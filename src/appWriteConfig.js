@@ -1,4 +1,4 @@
-import { Client, Databases } from 'appwrite';
+import { Client, Databases, Account } from 'appwrite';
 
 export const PROJECT_ID = '671fa7450021c9ae4dc7';
 export const DATABASE_ID = '67200f91000d5b573df6';
@@ -7,4 +7,5 @@ const client = new Client();
 client.setEndpoint('https://cloud.appwrite.io/v1').setProject('671fa7450021c9ae4dc7');
 
 export const database = new Databases(client);
+export const account = new Account(client);
 export default client;

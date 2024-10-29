@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react'
 import client, {COLLECTION_ID_MESSAGES, database, DATABASE_ID} from "../appWriteConfig.js";
 import {ID, Query} from 'appwrite'
 import {Trash2} from "react-feather";
+import Header from "../components/Header.jsx";
 
 const Room = () => {
     const [messages, setMessages] = useState([]);
@@ -18,17 +19,23 @@ const Room = () => {
     }
     useEffect(() => {
         getMessages();
-        const unsubscribe = client.subscribe(`databases.${DATABASE_ID}.collections.${COLLECTION_ID_MESSAGES}.documents`, (response) => {
+        const handleEvents = response => {
             console.log(response);
-            if (response.events.some(event => /databases\.\*\.collections\.\*\.documents\.\*\.create/.test(event))){
-                setMessages(prevState => [response.payload, ...prevState]);
-                console.log("create");
+            if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+                setMessages(prevMessages => [response.payload, ...prevMessages]);
             }
-            if(response.events.some(event => /databases\.\*\.collections\.\*\.documents\.\*\.delete/.test(event))){
-                setMessages(prevState => [response.payload, ...prevState]);
-                console.log("delete");
+
+            if(response.events.includes('databases.*.collections.*.documents.*.delete')) {
+                //setMessages(messages.filter(message => message.$id !== response.payload.$id))
+                setMessages((prevMessages) => prevMessages.filter((message) => message.$id !== response.payload.$id)
+                );
             }
-        });
+
+
+        };
+        const unsubscribe = client.subscribe(`databases.${DATABASE_ID}.collections.${COLLECTION_ID_MESSAGES}.documents`,
+            handleEvents
+        );
         return () => {
             unsubscribe();
         }
@@ -53,6 +60,7 @@ const Room = () => {
     }
     return (
         <main className="container">
+            <Header />
             <div className="room--container">
                 <form onSubmit={handleSumit} id="message--form">
                     <div>
